@@ -179,3 +179,10 @@ evolutionmenu-utility-absorbbiomatter-name = Absorb Biomatter
 evolutionmenu-utility-absorbbiomatter-desc =
     Absorbs an organic food item, letting you regain chemicals depending on its contents.
     Can absorb nutriment, cooked and uncooked proteins, and fat.
+    
+
+evolutionmenu-utility-infecttarget-name = Infect Target
+evolutionmenu-utility-infecttarget-desc =
+    Injects a Changeling egg into the target, eventually converting them into a fellow Changeling.
+    Requires 60 chemicals. Deunomia can be used to reverse it if you make a mistake, but only if it hasn't taken over yet.
+    Default radio key is +h
