@@ -144,8 +144,6 @@ public sealed class PipeRestrictOverlapSystem : EntitySystem
 
         // If no strict pipe stacking, then output ("are all entDirs occupied", takenDirs)
 
-        return (StrictPipeStacking ? false : ((takenDirs & entDirsCollapsed) == entDirsCollapsed), takenDirs);
-
         IEnumerable<(PipeDirection, AtmosPipeLayer)> GetAllDirectionsAndLayers(Entity<NodeContainerComponent, TransformComponent> pipe)
         {
             foreach (var node in pipe.Comp1.Nodes.Values)
