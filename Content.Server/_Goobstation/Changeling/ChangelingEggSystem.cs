@@ -4,6 +4,8 @@ using Content.Shared.Changeling;
 using Content.Shared.Mind;
 using Content.Server.Body.Systems;
 using Content.Shared.Store.Components;
+using Content.Goobstation.Shared.Changeling.Components;
+using Content.Goobstation.Common.Changeling;
 
 namespace Content.Server.Changeling;
 

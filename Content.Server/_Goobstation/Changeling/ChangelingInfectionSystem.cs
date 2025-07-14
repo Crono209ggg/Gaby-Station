@@ -21,8 +21,10 @@ using Content.Server.Medical;
 using Content.Shared.Tag;
 using Content.Shared.Implants;
 using Content.Shared.Implants.Components;
+using Content.Goobstation.Server.Changeling.GameTicking.Rules;
 
-namespace Content.Server.Changeling;
+
+namespace Content.Goobstation.Server.Changeling.GameTicking.Rules;
 
 public sealed partial class ChangelingInfectionSystem : EntitySystem
 {
