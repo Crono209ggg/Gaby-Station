@@ -173,6 +173,7 @@
     - id: RubberStampApproved
     - id: RubberStampDenied
     - id: RubberStampQm
+    - id: StockTradingCartridge
     - id: LavalandShuttleConsoleCircuitboard # Goobstation - Mining Shuttle Board
     - id: AstroNavCartridge
     - id: ATMFlatpack # Gabystation
