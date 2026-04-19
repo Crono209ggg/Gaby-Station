@@ -1,6 +1,6 @@
 # Note: ShadowGrapple exists on the heart of the shadow demon
 - type: entity
-  parent: [AppearanceShadowDemon, SimpleSpaceMobBase]
+  parent: [SimpleSpaceMobBase]
   id: BaseMobShadowDemon
   name: shadow demon
   suffix: ""
@@ -116,6 +116,8 @@
   - type: SlowOnDamage
     speedModifierThresholds:
       100: 1
+  - type: Body
+    prototype: ShadowDemon
   - type: Bloodstream
     bloodReferenceSolution:
       reagents:

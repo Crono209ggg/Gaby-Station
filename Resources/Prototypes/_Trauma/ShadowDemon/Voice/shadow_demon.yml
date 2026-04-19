@@ -1,6 +1,6 @@
 - type: emoteSounds
   id: ShadowDemon
-  parent: BaseMobEmotes
+  parent: GeneralBodyEmotes
   sounds:
     Laugh:
       collection: ShadowDemonLaugh
