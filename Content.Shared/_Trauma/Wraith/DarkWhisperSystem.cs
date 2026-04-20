@@ -5,7 +5,7 @@ using Content.Shared.Chat.TypingIndicator;
 using Content.Shared.Popups;
 using Robust.Shared.Timing;
 
-namespace Content.Trauma.Shared.Wraith;
+namespace Content.Shared._Trauma.Wraith;
 
 /// <summary>
 /// Lets you talk through a selected target when you speak for a certain amount of seconds
