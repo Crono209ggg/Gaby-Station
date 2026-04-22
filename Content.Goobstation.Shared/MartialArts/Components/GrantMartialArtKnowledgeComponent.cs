@@ -16,6 +16,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Goobstation.Common.MartialArts;
+using Content.Shared.Damage;
 using Robust.Shared.Audio;
 
 namespace Content.Goobstation.Shared.MartialArts.Components;
@@ -115,3 +116,42 @@ public sealed partial class GrantHellRipComponent : GrantMartialArtKnowledgeComp
 
     public override LocId? LearnMessage { get; set; } = "hellrip-success-learned";
 }
+
+// Gaby Jiu-jitso start
+
+[RegisterComponent]
+public sealed partial class GrantJiuJitsoComponent : GrantMartialArtKnowledgeComponent
+{
+    [DataField]
+    public override MartialArtsForms MartialArtsForm { get; set; } = MartialArtsForms.JiuJitso;
+
+    [DataField]
+    public bool GrantOnUse;
+
+    public override LocId? LearnMessage { get; set; } = "jiu-jitso-success-learned";
+}
+
+[RegisterComponent]
+public sealed partial class JiuJitsoComponent : Component
+{
+    [DataField]
+    public float GroundDamageBonus = 4f;
+
+    [DataField]
+    public float GroundStaminaDamageBonus = 8f;
+
+    [DataField]
+    public float StandingDamagePenalty = 2f;
+}
+
+[RegisterComponent]
+public sealed partial class MartialArtRestoreDataComponent : Component
+{
+    [DataField]
+    public DamageSpecifier OriginalFistDamageSpecifier = new();
+
+    [DataField]
+    public float OriginalAttackRate;
+}
+
+// Gaby Jiu-jitso end

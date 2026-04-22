@@ -336,6 +336,8 @@ uplink-capoeira-desc = A manual that teaches a single user Capoeira before self-
 uplink-sleeping-carp-name = Way of the Sleeping Carp Scroll
 uplink-sleeping-carp-desc = This single-use scroll contains the secrets of an ancient martial arts technique. You will master unarmed combat, deflecting ranged weapon fire, and space carp will become friendly to you. Learning this art means you will also refuse to use dishonorable ranged weaponry. Unable to be understood by changelings.
 
+uplink-jiu-jitso-name = Jiu-Jitso Scroll
+uplink-jiu-jitso-desc = A modern grappling scroll that teaches Jiu-Jitso to one user before it burns away. Built for control, takedowns and submissions.
 
 # Misc
 

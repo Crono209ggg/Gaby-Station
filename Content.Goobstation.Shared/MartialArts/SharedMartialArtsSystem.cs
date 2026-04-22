@@ -35,6 +35,7 @@ using Content.Goobstation.Shared.MartialArts.Components;
 using Content.Goobstation.Shared.Sprinting;
 using Content.Goobstation.Shared.Stealth;
 using Content.Shared._Goobstation.Heretic.Components;
+using Content.Goobstation.Maths.FixedPoint;
 using Content.Shared._Shitmed.Medical.Surgery.Traumas.Systems;
 using Content.Shared._Shitmed.Targeting;
 using Content.Shared._White.BackStab;
@@ -129,6 +130,7 @@ public abstract partial class SharedMartialArtsSystem : EntitySystem
         InitializeDragon();
         InitializeNinjutsu();
         InitializeHellRip();
+        InitializeJiuJitso();
         InitializeCanPerformCombo();
 
         SubscribeLocalEvent<MartialArtsKnowledgeComponent, ComponentShutdown>(OnShutdown);
@@ -389,6 +391,11 @@ public abstract partial class SharedMartialArtsSystem : EntitySystem
             case MartialArtsForms.Capoeira:
                 OnCapoeiraMeleeHit(ent, ref args);
                 break;
+
+            case MartialArtsForms.JiuJitso:
+                OnJiuJitsoMeleeHit(ent, ref args);
+                break;
+
         }
 
 
@@ -414,6 +421,8 @@ public abstract partial class SharedMartialArtsSystem : EntitySystem
             comboComponent.AllowedCombos.Clear();
 
         RemCompDeferred<DragonKungFuTimerComponent>(ent);
+        RemCompDeferred<JiuJitsoComponent>(ent);
+        RemCompDeferred<MartialArtRestoreDataComponent>(ent);
     }
 
     private void CheckGrabStageOverride<T>(EntityUid uid, T component, CheckGrabOverridesEvent args)
@@ -558,6 +567,9 @@ public abstract partial class SharedMartialArtsSystem : EntitySystem
                     new CanDoCQCEvent()));
                     */
                 break;
+            case MartialArtsForms.JiuJitso:
+                EnsureComp<JiuJitsoComponent>(user);
+                break;
         }
 
         martialArtsKnowledgeComponent.MartialArtsForm = martialArtsPrototype.MartialArtsForm;
@@ -565,6 +577,10 @@ public abstract partial class SharedMartialArtsSystem : EntitySystem
         LoadCombos(martialArtsPrototype.RoundstartCombos, canPerformComboComponent);
         martialArtsKnowledgeComponent.Blocked = false;
 
+        var restoreData = EnsureComp<MartialArtRestoreDataComponent>(user);
+        restoreData.OriginalFistDamageSpecifier = new DamageSpecifier(meleeWeaponComponent.Damage);
+        restoreData.OriginalAttackRate = meleeWeaponComponent.AttackRate;
+        martialArtsKnowledgeComponent.OriginalAttackRate = meleeWeaponComponent.AttackRate;
         if (meleeWeaponComponent.Damage.DamageDict.Count != 0)
         {
             martialArtsKnowledgeComponent.OriginalFistDamage =
@@ -581,6 +597,66 @@ public abstract partial class SharedMartialArtsSystem : EntitySystem
         Dirty(user, pullerComponent);
         return true;
     }
+
+    private void OnJiuJitsoMeleeHit(EntityUid user, ref MeleeHitEvent args)
+    {
+        if (!TryComp<JiuJitsoComponent>(user, out var component))
+            return;
+
+        foreach (var target in args.HitEntities)
+        {
+            if (IsDown(target))
+            {
+                var bonusDamage = new DamageSpecifier();
+                bonusDamage.DamageDict.Add("Blunt", component.GroundDamageBonus);
+                args.BonusDamage += bonusDamage;
+                _stamina.TakeStaminaDamage(target, component.GroundStaminaDamageBonus, source: user, applyResistances: true);
+                continue;
+            }
+
+            var malusDamage = new DamageSpecifier();
+            malusDamage.DamageDict.Add("Blunt", -component.StandingDamagePenalty);
+            args.BonusDamage += malusDamage;
+        }
+    }
+
+    private bool TryRemoveMartialArt(EntityUid user, MartialArtsForms expectedForm)
+    {
+        if (!TryComp<MartialArtsKnowledgeComponent>(user, out var knowledge)
+            || knowledge.MartialArtsForm != expectedForm
+            || !TryComp<MeleeWeaponComponent>(user, out var meleeWeaponComponent))
+            return false;
+
+        if (TryComp<MartialArtRestoreDataComponent>(user, out var restoreData)
+            && restoreData.OriginalFistDamageSpecifier.DamageDict.Count > 0)
+            meleeWeaponComponent.Damage = new DamageSpecifier(restoreData.OriginalFistDamageSpecifier);
+        else if (!string.IsNullOrEmpty(knowledge.OriginalFistDamageType))
+        {
+            var originalDamage = new DamageSpecifier();
+            originalDamage.DamageDict[knowledge.OriginalFistDamageType] = FixedPoint2.New(knowledge.OriginalFistDamage);
+            meleeWeaponComponent.Damage = originalDamage;
+        }
+
+        var restoredAttackRate = restoreData?.OriginalAttackRate ?? knowledge.OriginalAttackRate;
+        meleeWeaponComponent.AttackRate = restoredAttackRate <= 0f
+            ? meleeWeaponComponent.AttackRate
+            : restoredAttackRate;
+
+        RemComp<MartialArtsKnowledgeComponent>(user);
+        RemComp<CanPerformComboComponent>(user);
+        RemComp<JiuJitsoComponent>(user);
+        RemComp<MartialArtRestoreDataComponent>(user);
+
+        if (TryComp<HumanoidAppearanceComponent>(user, out var humanoid)
+            && humanoid.Species == "Waddler")
+        {
+            meleeWeaponComponent.AttackRate = 4f;
+        }
+
+        Dirty(user, meleeWeaponComponent);
+        return true;
+    }
+
 
     private void LoadCombos(ProtoId<ComboListPrototype> list, CanPerformComboComponent combo)
     {

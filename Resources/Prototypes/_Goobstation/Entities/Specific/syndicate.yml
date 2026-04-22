@@ -64,3 +64,23 @@
   - type: GuideHelp
     guides:
     - Capoeira
+
+- type: entity
+  parent: [BaseItem, BaseSyndicateContraband]
+  id: JiuJitsoScroll
+  name: modern jiu-jitso scroll
+  description: A modernized Japanese scroll covered in grappling diagrams and choke entries.
+  components:
+  - type: Sprite
+    sprite: _Gabystation/MarcialArts/martial_arts.rsi
+    layers:
+    - state: jiujitsoscroll
+  - type: Item
+    size: Small
+  - type: StaticPrice
+    price: 3000
+  - type: GrantJiuJitso
+    grantOnUse: true
+  - type: GuideHelp
+    guides:
+    - CorporateJudo

@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: 2026 Goob Station Contributors
+# SPDX-FileCopyrightText: 2026 punkzebu <punkzebub@email.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+- type: martialArt
+  id: JiuJitso
+  martialArtsForm: JiuJitso
+  roundstartCombos: JiuJitsoMoves
+  baseDamageModifier: 1
+
+- type: comboList
+  id: JiuJitsoMoves
+  combos:
+  - JiuJitsoSuplex
+  - JiuJitsoGuillotineChoke
+  - JiuJitsoReversal
+  - JiuJitsoSubmission
+
+- type: combo
+  id: JiuJitsoSuplex
+  name: Suplex
+  martialArtsForm: JiuJitso
+  attacks:
+  - Harm
+  - Disarm
+  - Grab
+  - Grab
+  event: !type:JiuJitsoSuplexPerformedEvent
+  paralyzeTime: 6
+  staminaDamage: 30
+  extraDamage: 10
+
+- type: combo
+  id: JiuJitsoGuillotineChoke
+  name: Guillotine Choke
+  martialArtsForm: JiuJitso
+  attacks:
+  - Disarm
+  - Grab
+  event: !type:JiuJitsoGuillotineChokePerformedEvent
+
+- type: combo
+  id: JiuJitsoReversal
+  name: Reversal
+  martialArtsForm: JiuJitso
+  attacks:
+  - Disarm
+  - Harm
+  event: !type:JiuJitsoReversalPerformedEvent
+
+- type: combo
+  id: JiuJitsoSubmission
+  name: Submission
+  martialArtsForm: JiuJitso
+  attacks:
+  - Disarm
+  - Disarm
+  event: !type:JiuJitsoSubmissionPerformedEvent
+  staminaDamage: 80

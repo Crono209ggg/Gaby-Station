@@ -1650,6 +1650,7 @@
   - SeniorOfficerJumpskirt
   - TrooperUniform
   - SecuritySummerJumpsuit # Nyanotrasen
+  - SecurityJiuJitsoGi  # Gaby - Martial Arts
 
 - type: loadoutGroup
   id: SecurityBackpack

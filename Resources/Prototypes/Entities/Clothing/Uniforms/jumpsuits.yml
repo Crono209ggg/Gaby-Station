@@ -596,6 +596,22 @@
   - type: Clothing
     sprite: _Goobstation/Clothing/Uniforms/Jumpsuit/Civilian/kimono.rsi # Goob
 
+# Gaby start
+
+- type: entity
+  parent: ClothingUniformBase
+  id: ClothingUniformJumpsuitJiuJitsoGi
+  name: jiu-jitso gi
+  description: A reinforced training gi used for defensive grappling. Wearing it teaches Jiu-Jitso.
+  components:
+  - type: GrantJiuJitso
+  - type: Sprite
+    sprite: _Gabystation/MarcialArts/kimono.rsi # Gaby
+  - type: Clothing
+    sprite: _Gabystation/MarcialArts/kimono.rsi # Gaby
+
+# Gaby end
+
 - type: entity
   parent: [ClothingUniformBase, ClothingUniformFoldableBase] # Goob
   id: ClothingUniformJumpsuitMedicalDoctor

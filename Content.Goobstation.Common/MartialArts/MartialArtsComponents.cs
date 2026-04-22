@@ -51,6 +51,12 @@ public sealed partial class MartialArtsKnowledgeComponent : GrabStagesOverrideCo
     [AutoNetworkedField]
     public string OriginalFistDamageType;
 
+
+    [DataField]
+    [AutoNetworkedField]
+    public float OriginalAttackRate;
+
+
 }
 
 public enum MartialArtsForms
@@ -62,4 +68,5 @@ public enum MartialArtsForms
     KungFuDragon,
     Ninjutsu,
     HellRip,
+    JiuJitso,
 }

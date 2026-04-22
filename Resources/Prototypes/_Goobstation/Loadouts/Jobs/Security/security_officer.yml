@@ -16,6 +16,11 @@
     belt: ClothingBeltCorporateJudoFilled
 
 - type: loadout
+  id: SecurityJiuJitsoGi
+  equipment:
+    jumpsuit: ClothingUniformJumpsuitJiuJitsoGi
+
+- type: loadout
   id: WinterCoatSeniorSecArmored
   effects:
   - !type:GroupLoadoutEffect

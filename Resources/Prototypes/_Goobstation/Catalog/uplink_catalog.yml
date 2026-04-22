@@ -1697,6 +1697,16 @@
       - ContractorUplink
       - NukeOpsUplink
 
+- type: listing
+  id: UplinkJiuJitsoScroll
+  name: uplink-jiu-jitso-name
+  description: uplink-jiu-jitso-desc
+  productEntity: JiuJitsoScroll
+  cost:
+    Telecrystal: 40
+  categories:
+  - UplinkWeaponry
+
 # Explosives
 
 - type: listing

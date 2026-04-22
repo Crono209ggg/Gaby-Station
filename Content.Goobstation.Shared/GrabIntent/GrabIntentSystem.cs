@@ -99,6 +99,10 @@ public sealed partial class GrabIntentSystem : EntitySystem
 
         component.GrabStage = GrabStage.No;
 
+        if (TryComp<PullerComponent>(uid, out var puller))
+            _alertsSystem.ClearAlert(uid, puller.PullingAlert);   
+
+        
         foreach (var item in GetGrabVirtualItems(uid, args.PulledUid).ToList())
         {
             if (TryComp<VirtualItemComponent>(item, out var vi))

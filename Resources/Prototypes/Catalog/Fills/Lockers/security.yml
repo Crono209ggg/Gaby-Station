@@ -171,6 +171,8 @@
     #- id: WeaponDisabler # Goobstation (Disablers in belts)
     - id: ClothingUniformJumpsuitSecGrey
       prob: 0.3
+    - id: ClothingUniformJumpsuitJiuJitsoGi
+      prob: 0.3
     - id: ClothingHeadHelmetBasic
     - id: ClothingOuterArmorBasic
     #- id: ClothingBeltSecurityFilled Goob, see GroupSelector below
