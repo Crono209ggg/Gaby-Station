@@ -6,21 +6,22 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Shared.Anomaly.Prototypes;
 
-[Prototype("advancedAnomalyGeneration")]
-public sealed class AdvancedAnomalyGenerationPrototype : IPrototype
+[Prototype]
+public sealed partial class AdvancedAnomalyGenerationPrototype : IPrototype
 {
     [IdDataField]
     public string ID { get; private set; } = default!;
 
-    [DataField]
-    public string Name { get; private set; } = string.Empty;
+    [DataField(required: true)]
+    public LocId Name;
 
     [DataField(required: true)]
-    public EntProtoId AnomalyPrototype { get; private set; } = default!;
+    public EntProtoId AnomalyPrototype;
 
     [DataField]
-    public int ResearchCost { get; private set; }
+    public int ResearchCost;
 
+    // How much of the required material it uses, Doesnt have to be plasma
     [DataField]
-    public int? PlasmaCost { get; private set; }
+    public int MaterialCost = 1500;
 }

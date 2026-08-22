@@ -6,25 +6,25 @@
   id: AdvancedAnomalyPyroclastic
   name: advanced-anomaly-generator-entry-pyroclastic
   anomalyPrototype: AnomalyPyroclastic
-  researchCost: 10000
+  researchCost: 22000
 
 - type: advancedAnomalyGeneration
   id: AdvancedAnomalyGravity
   name: advanced-anomaly-generator-entry-gravity
   anomalyPrototype: AnomalyGravity
-  researchCost: 12000
+  researchCost: 22000
 
 - type: advancedAnomalyGeneration
   id: AdvancedAnomalyElectricity
   name: advanced-anomaly-generator-entry-electricity
   anomalyPrototype: AnomalyElectricity
-  researchCost: 10000
+  researchCost: 16000
 
 - type: advancedAnomalyGeneration
   id: AdvancedAnomalyIce
   name: advanced-anomaly-generator-entry-ice
   anomalyPrototype: AnomalyIce
-  researchCost: 15000
+  researchCost: 16000
 
 - type: advancedAnomalyGeneration
   id: AdvancedAnomalyFlora
@@ -36,19 +36,19 @@
   id: AdvancedAnomalyBluespace
   name: advanced-anomaly-generator-entry-bluespace
   anomalyPrototype: AnomalyBluespace
-  researchCost: 8000
+  researchCost: 22000
 
 - type: advancedAnomalyGeneration
   id: AdvancedAnomalyTech
   name: advanced-anomaly-generator-entry-tech
   anomalyPrototype: AnomalyTech
-  researchCost: 10000
+  researchCost: 12000
 
 - type: advancedAnomalyGeneration
   id: AdvancedAnomalyRock
   name: advanced-anomaly-generator-entry-rock
   anomalyPrototype: AnomalyRockBananium
-  researchCost: 8000
+  researchCost: 12000
 
 - type: advancedAnomalyGeneration
   id: AdvancedAnomalySanta
@@ -60,7 +60,7 @@
   id: AdvancedAnomalyShadow
   name: advanced-anomaly-generator-entry-shadow
   anomalyPrototype: AnomalyShadow
-  researchCost: 15000
+  researchCost: 22000
 
 - type: entity
   id: MachineAdvancedAnomalyGenerator
@@ -84,13 +84,10 @@
     - state: unshaded
       shader: unshaded
       map: ["enum.PowerDeviceVisualLayers.Powered"]
-    - state: inserting
-      visible: false
-      map: ["enum.MaterialStorageVisualLayers.Inserting"]
     - state: generating
       visible: false
       shader: unshaded
-      map: ["enum.AdvancedAnomalyGeneratorVisualLayers.Base"]
+      map: ["enum.AnomalyGeneratorVisualLayers.Base"]
   - type: Transform
     anchored: true
   - type: ApcPowerReceiver
@@ -104,9 +101,6 @@
   - type: Physics
     bodyType: Static
   - type: AdvancedAnomalyGenerator
-    requiredMaterial: Plasma
-    materialCost: 1500
-    generationLength: 8
     generatingSound:
       path: /Audio/Machines/anomaly_generate.ogg
     generatingFinishedSound:
@@ -164,7 +158,9 @@
   - type: UserInterface
     interfaces:
       enum.AdvancedAnomalyGeneratorUiKey.Key:
-        type: AdvancedAnomalyGeneratorBoundUserInterface
+        type: AdvancedAnomalyGeneratorBui
+      enum.ResearchClientUiKey.Key:
+        type: ResearchClientBoundUserInterface
       enum.WiresUiKey.Key:
         type: WiresBoundUserInterface
   - type: Appearance
@@ -174,8 +170,8 @@
         enum.PowerDeviceVisualLayers.Powered:
           True: { visible: true }
           False: { visible: false }
-      enum.AdvancedAnomalyGeneratorVisualLayers.Base:
-        enum.AdvancedAnomalyGeneratorVisualLayers.Base:
+      enum.AnomalyGeneratorVisuals.Generating:
+        enum.AnomalyGeneratorVisualLayers.Base:
           True: { visible: true }
           False: { visible: false }
   - type: WiresVisuals
@@ -198,8 +194,7 @@
   - type: MachineBoard
     prototype: MachineAdvancedAnomalyGenerator
     stackRequirements:
-      Manipulator: 8
-      Cable: 5
-      Glass: 20
-      Steel: 30
-      Uranium: 2
+      Cable: 15
+      CableMV: 20
+      Steel: 15
+      Glass: 10

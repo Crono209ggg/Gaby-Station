@@ -2,30 +2,24 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Content.Server.Anomaly.Components;
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Pinpointer;
 using Content.Server.Power.EntitySystems;
 using Content.Server.Radio.EntitySystems;
-using Content.Server.Station.Systems;
 using Content.Server.Research.Systems;
-using Content.Shared.Access.Components;
+using Content.Server.Station.Systems;
 using Content.Shared.Access.Systems;
 using Content.Shared.Anomaly;
 using Content.Shared.Anomaly.Prototypes;
 using Content.Shared.Materials;
 using Content.Shared.Physics;
-using Content.Shared.Pinpointer;
 using Content.Shared.Popups;
-using Content.Shared.Radio;
 using Content.Shared.Research.Components;
 using Robust.Server.GameObjects;
 using Robust.Shared.Audio;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Map;
-using Robust.Shared.Maths;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Physics;
 using Robust.Shared.Physics.Components;
@@ -35,32 +29,36 @@ using Robust.Shared.Utility;
 
 namespace Content.Server.Anomaly;
 
-public sealed class AdvancedAnomalyGeneratorSystem : EntitySystem
+public sealed partial class AdvancedAnomalyGeneratorSystem : EntitySystem
 {
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly SharedMaterialStorageSystem _material = default!;
-    [Dependency] private readonly ResearchSystem _research = default!;
-    [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly UserInterfaceSystem _ui = default!;
-    [Dependency] private readonly SharedMapSystem _map = default!;
-    [Dependency] private readonly StationSystem _station = default!;
-    [Dependency] private readonly AtmosphereSystem _atmosphere = default!;
-    [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly AppearanceSystem _appearance = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly RadioSystem _radio = default!;
-    [Dependency] private readonly NavMapSystem _navMap = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly SharedIdCardSystem _idCard = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
+    [Dependency] private AppearanceSystem _appearance = default!;
+    [Dependency] private AtmosphereSystem _atmosphere = default!;
+    [Dependency] private NavMapSystem _navMap = default!;
+    [Dependency] private RadioSystem _radio = default!;
+    [Dependency] private ResearchSystem _research = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedIdCardSystem _idCard = default!;
+    [Dependency] private SharedMapSystem _map = default!;
+    [Dependency] private SharedMaterialStorageSystem _material = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private StationSystem _station = default!;
+    [Dependency] private UserInterfaceSystem _ui = default!;
+
+    private EntityQuery<PhysicsComponent> _physicsQuery;
 
     public override void Initialize()
     {
         base.Initialize();
+        _physicsQuery = GetEntityQuery<PhysicsComponent>();
+
         SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, BoundUIOpenedEvent>(OnUiOpened);
-        SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, MaterialAmountChangedEvent>(OnMaterialChanged);
+        SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, MaterialAmountChangedEvent>(OnRefresh);
+        SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, ResearchServerPointsChangedEvent>(OnRefresh);
+        SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, ResearchRegistrationChangedEvent>(OnRefresh);
         SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, AdvancedAnomalyGeneratorGenerateMessage>(OnGenerate);
-        SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, ResearchServerPointsChangedEvent>(OnResearchPointsChanged);
-        SubscribeLocalEvent<GeneratingAdvancedAnomalyGeneratorComponent, ComponentStartup>(OnGeneratingStartup);
+        SubscribeLocalEvent<GeneratingAdvancedAnomalyGeneratorComponent, ComponentShutdown>((_, comp, _) => _audio.Stop(comp.AudioStream));
     }
 
     public override void Update(float frameTime)
@@ -68,299 +66,192 @@ public sealed class AdvancedAnomalyGeneratorSystem : EntitySystem
         base.Update(frameTime);
 
         var query = EntityQueryEnumerator<GeneratingAdvancedAnomalyGeneratorComponent, AdvancedAnomalyGeneratorComponent>();
-        while (query.MoveNext(out var uid, out var generating, out var gen))
+        while (query.MoveNext(out var uid, out var generating, out var comp))
         {
-            if (_timing.CurTime < generating.EndTime)
-                continue;
-
-            generating.AudioStream = _audio.Stop(generating.AudioStream);
-            OnGeneratingFinished(uid, generating, gen);
+            if (_timing.CurTime >= generating.EndTime)
+                FinishGeneration((uid, comp), generating);
         }
     }
 
-    private void OnGeneratingStartup(EntityUid uid, GeneratingAdvancedAnomalyGeneratorComponent component, ComponentStartup args)
+    private void OnRefresh<T>(Entity<AdvancedAnomalyGeneratorComponent> ent, ref T args) => UpdateUi(ent);
+
+    private void OnUiOpened(EntityUid uid, AdvancedAnomalyGeneratorComponent comp, BoundUIOpenedEvent args)
     {
-        _appearance.SetData(uid, AdvancedAnomalyGeneratorVisualLayers.Base, true);
+        // Wires and research use different UIs on the same machine, so they dont really need to care about our state
+        // Same machine, different roommates, They can mind their own business
+        if (args.UiKey is AdvancedAnomalyGeneratorUiKey)
+            UpdateUi((uid, comp));
     }
 
-    private void OnGeneratingFinished(EntityUid uid, GeneratingAdvancedAnomalyGeneratorComponent generating, AdvancedAnomalyGeneratorComponent component)
+    private void OnGenerate(EntityUid uid, AdvancedAnomalyGeneratorComponent comp, AdvancedAnomalyGeneratorGenerateMessage args)
     {
-        _appearance.SetData(uid, AdvancedAnomalyGeneratorVisualLayers.Base, false);
-        RemComp<GeneratingAdvancedAnomalyGeneratorComponent>(uid);
-
-        string message;
-        if (!_prototype.TryIndex(generating.EntryId, out var entry))
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-invalid-anomaly");
-            RefundPlasmaAndFail(uid, component, generating, message);
-            return;
-        }
-
-        if (!TryGetValidatedCoordinates(uid, generating.Tile, out var coords, out message))
-        {
-            RefundPlasmaAndFail(uid, component, generating, message);
-            return;
-        }
-
-        if (!TryGetResearchServer(uid, out var serverUid, out var server) || serverUid is not { } researchServer)
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-no-server");
-            RefundPlasmaAndFail(uid, component, generating, message);
-            return;
-        }
-
-        _research.ModifyServerPoints(researchServer, -entry.ResearchCost, server);
-        var anomaly = Spawn(entry.AnomalyPrototype, coords);
-        _audio.PlayPvs(component.GeneratingFinishedSound, uid);
-
-        AnnounceGeneration(uid, component, anomaly, Loc.GetString(entry.Name), generating.User);
-
-        message = Loc.GetString("advanced-anomaly-generator-success", ("anomaly", Loc.GetString(entry.Name)), ("x", generating.Tile.X), ("y", generating.Tile.Y));
-        component.LastMessage = message;
-        if (generating.User != null)
-            _popup.PopupEntity(message, uid, generating.User.Value);
-
-        UpdateUi(uid, component);
+        if (!HasComp<GeneratingAdvancedAnomalyGeneratorComponent>(uid)
+            && StartGeneration((uid, comp), args.Entry, args.Tile, args.Actor) is { } error)
+            Report((uid, comp), args.Actor, error);
     }
 
-    private void RefundPlasmaAndFail(EntityUid uid, AdvancedAnomalyGeneratorComponent component, GeneratingAdvancedAnomalyGeneratorComponent generating, string message)
+    private string? StartGeneration(
+        Entity<AdvancedAnomalyGeneratorComponent> ent,
+        ProtoId<AdvancedAnomalyGenerationPrototype> entryId,
+        Vector2i tile,
+        EntityUid user)
     {
-        _material.TryChangeMaterialAmount(uid, component.RequiredMaterial, generating.PlasmaConsumed);
-        Fail(uid, component, generating.User, message);
-    }
+        if (!this.IsPowered(ent, EntityManager))
+            return Loc.GetString("advanced-anomaly-generator-error-unpowered");
 
-    private void OnUiOpened(EntityUid uid, AdvancedAnomalyGeneratorComponent component, BoundUIOpenedEvent args)
-    {
-        UpdateUi(uid, component);
-    }
+        var remaining = ent.Comp.CooldownEnd - _timing.CurTime;
+        if (remaining > TimeSpan.Zero)
+            return Loc.GetString("advanced-anomaly-generator-error-cooldown", ("time", AdvancedAnomalyGeneratorRules.FormatCooldown(remaining)));
 
-    private void OnMaterialChanged(EntityUid uid, AdvancedAnomalyGeneratorComponent component, ref MaterialAmountChangedEvent args)
-    {
-        UpdateUi(uid, component);
-    }
+        if (!ent.Comp.AllowedAnomalies.Contains(entryId) || !_prototype.TryIndex(entryId, out var entry))
+            return Loc.GetString("advanced-anomaly-generator-error-invalid-anomaly");
 
-    private void OnResearchPointsChanged(EntityUid uid, AdvancedAnomalyGeneratorComponent component, ref ResearchServerPointsChangedEvent args)
-    {
-        UpdateUi(uid, component);
-    }
+        if (!_research.TryGetClientServer(ent, out var server, out var serverComp))
+            return Loc.GetString("advanced-anomaly-generator-error-no-server");
 
-    private void OnGenerate(EntityUid uid, AdvancedAnomalyGeneratorComponent component, AdvancedAnomalyGeneratorGenerateMessage args)
-    {
-        if (HasComp<GeneratingAdvancedAnomalyGeneratorComponent>(uid))
-            return;
+        if (serverComp.Points < entry.ResearchCost)
+            return Loc.GetString("advanced-anomaly-generator-error-research", ("needed", entry.ResearchCost), ("available", serverComp.Points));
 
-        TryBeginGeneration(uid, args.Actor, args.EntryId, new Vector2i(args.TileX, args.TileY), component);
-    }
+        if (GetTileError(ent, tile, out _) is { } tileError)
+            return tileError;
 
-    private void TryBeginGeneration(EntityUid uid, EntityUid? user, string entryId, Vector2i tile, AdvancedAnomalyGeneratorComponent? component = null)
-    {
-        if (!Resolve(uid, ref component))
-            return;
-
-        string message;
-        if (!this.IsPowered(uid, EntityManager))
+        // We spend the points right away so two requests cant use the same ones, If it fails, FinishGeneration gives them back
+        // No double spending here :D
+        var material = _material.GetMaterialAmount(ent, ent.Comp.RequiredMaterial);
+        if (!_material.TryChangeMaterialAmount(ent, ent.Comp.RequiredMaterial, -entry.MaterialCost))
         {
-            message = Loc.GetString("advanced-anomaly-generator-error-unpowered");
-            Fail(uid, component, user, message);
-            return;
+            return Loc.GetString("advanced-anomaly-generator-error-material",
+                ("material", Loc.GetString(_prototype.Index(ent.Comp.RequiredMaterial).Name)),
+                ("needed", entry.MaterialCost),
+                ("available", material));
         }
 
-        if (!_prototype.TryIndex<AdvancedAnomalyGenerationPrototype>(entryId, out var entry) || !component.AllowedAnomalies.Contains(entry.ID))
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-invalid-anomaly");
-            Fail(uid, component, user, message);
-            return;
-        }
+        _research.ModifyServerPoints(server.Value, -entry.ResearchCost, serverComp);
 
-        if (!_prototype.HasIndex<EntityPrototype>(entry.AnomalyPrototype))
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-invalid-anomaly");
-            Fail(uid, component, user, message);
-            return;
-        }
-
-        var plasmaCost = entry.PlasmaCost ?? component.MaterialCost;
-        var plasma = _material.GetMaterialAmount(uid, component.RequiredMaterial);
-        if (plasma < plasmaCost)
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-plasma", ("needed", plasmaCost), ("available", plasma));
-            Fail(uid, component, user, message);
-            return;
-        }
-
-        if (!TryGetResearchServer(uid, out _, out var server))
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-no-server");
-            Fail(uid, component, user, message);
-            return;
-        }
-
-        if (server.Points < entry.ResearchCost)
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-research", ("needed", entry.ResearchCost), ("available", server.Points));
-            Fail(uid, component, user, message);
-            return;
-        }
-
-        if (!TryGetValidatedCoordinates(uid, tile, out _, out message))
-        {
-            Fail(uid, component, user, message);
-            return;
-        }
-
-        if (!_material.TryChangeMaterialAmount(uid, component.RequiredMaterial, -plasmaCost))
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-plasma", ("needed", plasmaCost), ("available", plasma));
-            Fail(uid, component, user, message);
-            return;
-        }
-
-        var generating = EnsureComp<GeneratingAdvancedAnomalyGeneratorComponent>(uid);
-        generating.EndTime = _timing.CurTime + component.GenerationLength;
-        generating.EntryId = entryId;
+        var generating = AddComp<GeneratingAdvancedAnomalyGeneratorComponent>(ent);
+        generating.EndTime = _timing.CurTime + ent.Comp.GenerationLength;
+        generating.Entry = entryId;
         generating.Tile = tile;
         generating.User = user;
-        generating.PlasmaConsumed = plasmaCost;
-        generating.AudioStream = _audio.PlayPvs(component.GeneratingSound, uid, AudioParams.Default.WithLoop(true))?.Entity;
+        generating.Server = server.Value;
+        generating.AudioStream = _audio.PlayPvs(ent.Comp.GeneratingSound, ent, AudioParams.Default.WithLoop(true))?.Entity;
 
-        UpdateUi(uid, component);
+        _appearance.SetData(ent, AnomalyGeneratorVisuals.Generating, true);
+        UpdateUi(ent);
+        return null;
     }
 
-    private void UpdateUi(EntityUid uid, AdvancedAnomalyGeneratorComponent component)
+    private void FinishGeneration(Entity<AdvancedAnomalyGeneratorComponent> ent, GeneratingAdvancedAnomalyGeneratorComponent generating)
     {
-        var entries = GetEntries(component)
-            .Select(p => new AdvancedAnomalyGeneratorEntryState(
-                p.ID,
-                Loc.GetString(p.Name),
-                p.ResearchCost,
-                p.PlasmaCost ?? component.MaterialCost,
-                p.AnomalyPrototype))
-            .ToList();
+        RemComp<GeneratingAdvancedAnomalyGeneratorComponent>(ent);
+        _appearance.SetData(ent, AnomalyGeneratorVisuals.Generating, false);
 
-        var plasma = _material.GetMaterialAmount(uid, component.RequiredMaterial);
-        var points = TryGetResearchServer(uid, out _, out var server) ? server.Points : 0;
-        var stationGrid = TryGetStationGrid(uid, out var grid) ? grid : null;
-        if (stationGrid is { } gridUid)
-            EnsureComp<NavMapComponent>(gridUid);
+        var entry = _prototype.Index(generating.Entry);
+        var user = Exists(generating.User) ? generating.User : null;
 
-        var defaultTile = GetDefaultTile(uid);
-        var netGrid = stationGrid is { } validGrid ? GetNetEntity(validGrid) : NetEntity.Invalid;
-        var canUse = this.IsPowered(uid, EntityManager) && !HasComp<GeneratingAdvancedAnomalyGeneratorComponent>(uid);
-
-        _ui.SetUiState(uid, AdvancedAnomalyGeneratorUiKey.Key,
-            new AdvancedAnomalyGeneratorUserInterfaceState(entries, plasma, component.MaterialCost, points,
-                component.LastMessage, canUse, defaultTile.X, defaultTile.Y, netGrid));
-    }
-
-    private IEnumerable<AdvancedAnomalyGenerationPrototype> GetEntries(AdvancedAnomalyGeneratorComponent component)
-    {
-        foreach (var id in component.AllowedAnomalies)
+        // Tile got yoinked mid-generation, so at least give the poor guy his points back
+        if (GetTileError(ent, generating.Tile, out var coords) is { } error)
         {
-            if (_prototype.TryIndex(id, out AdvancedAnomalyGenerationPrototype? proto))
-                yield return proto;
+            _material.TryChangeMaterialAmount(ent, ent.Comp.RequiredMaterial, entry.MaterialCost);
+            if (TryComp<ResearchServerComponent>(generating.Server, out var server))
+                _research.ModifyServerPoints(generating.Server, entry.ResearchCost, server);
+
+            Report(ent, user, error);
+            return;
         }
+
+        // The cooldown only starts if the generation actually works
+        // No success, no cooldown, Nice try though
+        ent.Comp.CooldownEnd = _timing.CurTime + ent.Comp.Cooldown;
+        var anomaly = Spawn(entry.AnomalyPrototype, coords);
+        var anomalyName = Loc.GetString(entry.Name);
+        _audio.PlayPvs(ent.Comp.GeneratingFinishedSound, ent);
+
+        Announce(ent, anomaly, anomalyName, user);
+        Report(ent, user, Loc.GetString("advanced-anomaly-generator-success",
+            ("anomaly", anomalyName), ("x", generating.Tile.X), ("y", generating.Tile.Y)));
     }
 
-    private Vector2i GetDefaultTile(EntityUid uid)
-    {
-        var xform = Transform(uid);
-        if (!TryGetStationGrid(uid, out var grid) || !TryComp<MapGridComponent>(grid.Value, out var gridComp))
-            return Vector2i.Zero;
-
-        return _map.LocalToTile(grid.Value, gridComp, xform.Coordinates);
-    }
-
-    private bool TryGetValidatedCoordinates(EntityUid uid, Vector2i tile, out EntityCoordinates coords, out string message)
+    private string? GetTileError(Entity<AdvancedAnomalyGeneratorComponent> ent, Vector2i tile, out EntityCoordinates coords)
     {
         coords = default;
+        var uid = ent.Owner;
         var xform = Transform(uid);
-        if (!TryGetStationGrid(uid, out var grid))
+
+        if (_station.GetOwningStation(uid, xform) is not { } station)
+            return Loc.GetString("advanced-anomaly-generator-error-no-station");
+
+        if (xform.GridUid is not { } grid || grid != _station.GetLargestGrid(station) || !TryComp<MapGridComponent>(grid, out var gridComp))
+            return Loc.GetString("advanced-anomaly-generator-error-wrong-grid");
+
+        if (!AdvancedAnomalyGeneratorRules.InRange(_map.TileIndicesFor(grid, gridComp, xform.Coordinates), tile, ent.Comp.Range))
+            return Loc.GetString("advanced-anomaly-generator-error-out-of-range", ("range", ent.Comp.Range));
+
+        if (!_map.TryGetTileRef(grid, gridComp, tile, out var tileRef)
+            || tileRef.Tile.IsEmpty
+            || _atmosphere.IsTileSpace(grid, xform.MapUid, tile)
+            || _atmosphere.IsTileAirBlocked(grid, tile, mapGridComp: gridComp))
+            return Loc.GetString("advanced-anomaly-generator-error-invalid-location");
+
+        foreach (var anchored in _map.GetAnchoredEntities(grid, gridComp, tile))
         {
-            message = Loc.GetString("advanced-anomaly-generator-error-no-station");
-            return false;
+            // The generator doesnt count as blocking its own tile
+            // Would be pretty awkward if the generator blocked itself
+            // help
+            if (anchored != uid
+                && _physicsQuery.TryComp(anchored, out var body)
+                && body is { BodyType: BodyType.Static, Hard: true }
+                && (body.CollisionLayer & (int) CollisionGroup.Impassable) != 0)
+                return Loc.GetString("advanced-anomaly-generator-error-blocked-location");
         }
 
-        if (xform.GridUid != grid)
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-wrong-grid");
-            return false;
-        }
-
-        var gridUid = grid.Value;
-        if (!TryComp<MapGridComponent>(gridUid, out var gridComp) || !_map.TryGetTileRef(gridUid, gridComp, tile, out var tileRef) || tileRef.Tile.IsEmpty)
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-invalid-location");
-            return false;
-        }
-
-        if (_atmosphere.IsTileSpace(gridUid, xform.MapUid, tile) || _atmosphere.IsTileAirBlocked(gridUid, tile, mapGridComp: gridComp))
-        {
-            message = Loc.GetString("advanced-anomaly-generator-error-invalid-location");
-            return false;
-        }
-
-        var physQuery = GetEntityQuery<PhysicsComponent>();
-        foreach (var ent in _map.GetAnchoredEntities(gridUid, gridComp, tile))
-        {
-            if (!physQuery.TryGetComponent(ent, out var body))
-                continue;
-            if (body.BodyType == BodyType.Static && body.Hard && (body.CollisionLayer & (int) CollisionGroup.Impassable) != 0)
-            {
-                message = Loc.GetString("advanced-anomaly-generator-error-blocked-location");
-                return false;
-            }
-        }
-
-        coords = _map.GridTileToLocal(gridUid, gridComp, tile);
-        message = string.Empty;
-        return true;
+        coords = _map.GridTileToLocal(grid, gridComp, tile);
+        return null;
     }
 
-    private bool TryGetStationGrid(EntityUid uid, [NotNullWhen(true)] out EntityUid? grid)
+    private void Announce(Entity<AdvancedAnomalyGeneratorComponent> ent, EntityUid anomaly, string anomalyName, EntityUid? user)
     {
-        var xform = Transform(uid);
-        if (_station.GetStationInMap(xform.MapID) is { } station &&
-            _station.GetLargestGrid(station) is { } stationGrid)
-        {
-            grid = stationGrid;
-            return true;
-        }
-
-        grid = xform.GridUid;
-        return grid != null;
-    }
-
-    private bool TryGetResearchServer(EntityUid uid, out EntityUid? serverUid, [NotNullWhen(true)] out ResearchServerComponent? server)
-    {
-        return _research.TryGetClientServer(uid, out serverUid, out server);
-    }
-
-    private void AnnounceGeneration(EntityUid uid, AdvancedAnomalyGeneratorComponent component, EntityUid anomaly, string anomalyName, EntityUid? user)
-    {
-        var who = Loc.GetString("advanced-anomaly-generator-announce-unknown-user");
+        var operatorName = Loc.GetString("advanced-anomaly-generator-announce-unknown-user");
         if (user is { } actor)
         {
-            if (_idCard.TryFindIdCard(actor, out var idCard) && !string.IsNullOrWhiteSpace(idCard.Comp.FullName))
-                who = idCard.Comp.FullName;
-            else
-                who = Name(actor);
+            operatorName = _idCard.TryFindIdCard(actor, out var idCard) && idCard.Comp.FullName is { Length: > 0 } fullName
+                ? fullName
+                : Name(actor);
         }
 
-        var location = FormattedMessage.RemoveMarkupPermissive(_navMap.GetNearestBeaconString((anomaly, Transform(anomaly))));
+        var location = FormattedMessage.RemoveMarkupPermissive(_navMap.GetNearestBeaconString(anomaly));
+        var message = Loc.GetString("advanced-anomaly-generator-announce",
+            ("anomaly", anomalyName), ("user", operatorName), ("location", location));
 
-        var announcement = Loc.GetString("advanced-anomaly-generator-announce",
-            ("anomaly", anomalyName),
-            ("user", who),
-            ("location", location));
-
-        _radio.SendRadioMessage(uid, announcement, _prototype.Index<RadioChannelPrototype>(component.AnnouncementChannel), uid);
+        _radio.SendRadioMessage(ent, message, ent.Comp.AnnouncementChannel, ent);
     }
 
-    private void Fail(EntityUid uid, AdvancedAnomalyGeneratorComponent component, EntityUid? user, string message)
+    private void Report(Entity<AdvancedAnomalyGeneratorComponent> ent, EntityUid? user, string message)
     {
-        component.LastMessage = message;
         if (user != null)
-            _popup.PopupEntity(message, uid, user.Value);
-        UpdateUi(uid, component);
+            _popup.PopupEntity(message, ent, user.Value);
+
+        UpdateUi(ent);
+    }
+
+    private void UpdateUi(Entity<AdvancedAnomalyGeneratorComponent> ent)
+    {
+        var xform = Transform(ent);
+        var machineTile = xform.GridUid is { } grid && TryComp<MapGridComponent>(grid, out var gridComp)
+            ? _map.TileIndicesFor(grid, gridComp, xform.Coordinates)
+            : Vector2i.Zero;
+
+        var points = _research.TryGetClientServer(ent, out _, out var server) ? server.Points : 0;
+
+        _ui.SetUiState(ent.Owner, AdvancedAnomalyGeneratorUiKey.Key, new AdvancedAnomalyGeneratorUserInterfaceState(
+            new(ent.Comp.AllowedAnomalies),
+            ent.Comp.RequiredMaterial,
+            _material.GetMaterialAmount(ent, ent.Comp.RequiredMaterial),
+            points,
+            this.IsPowered(ent, EntityManager) && !HasComp<GeneratingAdvancedAnomalyGeneratorComponent>(ent),
+            ent.Comp.CooldownEnd,
+            ent.Comp.Range,
+            GetNetEntity(xform.GridUid),
+            machineTile));
     }
 }

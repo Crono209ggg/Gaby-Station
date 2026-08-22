@@ -2,29 +2,37 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using Content.Shared.Anomaly.Prototypes;
 using Content.Shared.Materials;
+using Content.Shared.Radio;
 using Robust.Shared.Audio;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
 
 namespace Content.Server.Anomaly.Components;
 
-[RegisterComponent]
+[RegisterComponent, AutoGenerateComponentPause, Access(typeof(AdvancedAnomalyGeneratorSystem))]
 public sealed partial class AdvancedAnomalyGeneratorComponent : Component
 {
-    [DataField, ViewVariables(VVAccess.ReadWrite)]
+    [DataField]
     public ProtoId<MaterialPrototype> RequiredMaterial = "Plasma";
 
-    [DataField, ViewVariables(VVAccess.ReadWrite)]
-    public int MaterialCost = 1500;
+    [DataField]
+    public List<ProtoId<AdvancedAnomalyGenerationPrototype>> AllowedAnomalies = new();
 
     [DataField]
-    public List<ProtoId<Content.Shared.Anomaly.Prototypes.AdvancedAnomalyGenerationPrototype>> AllowedAnomalies = new();
-
-    [DataField, ViewVariables(VVAccess.ReadOnly)]
-    public string? LastMessage;
-
-    [DataField, ViewVariables(VVAccess.ReadWrite)]
     public TimeSpan GenerationLength = TimeSpan.FromSeconds(8);
+
+    [DataField]
+    public TimeSpan Cooldown = TimeSpan.FromMinutes(5);
+
+    // How far the generator can reach in a straight line, measured in tiles
+    // Basically how far this thing can yeet stuff in a straight line
+    [DataField]
+    public int Range = 15;
+
+    [DataField(customTypeSerializer: typeof(TimeOffsetSerializer)), AutoPausedField]
+    public TimeSpan CooldownEnd;
 
     [DataField]
     public SoundSpecifier? GeneratingSound;
@@ -33,5 +41,5 @@ public sealed partial class AdvancedAnomalyGeneratorComponent : Component
     public SoundSpecifier? GeneratingFinishedSound;
 
     [DataField]
-    public string AnnouncementChannel = "Science";
+    public ProtoId<RadioChannelPrototype> AnnouncementChannel = "Science";
 }
