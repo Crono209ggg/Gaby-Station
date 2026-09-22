@@ -4113,3 +4113,9 @@ Entries:
       message: Expie. Verifique markings de vulpkanin.
   id: 488
   time: '2026-09-22T07:29:36.0000000+00:00'
+- author: Biel Verdadeiro
+  changes:
+    - type: Add
+      message: Adiciona upgrades para a Terminus e Lança Telescópica pesquisáveis.
+  id: 489
+  time: '2026-09-22T11:55:38.0000000+00:00'
