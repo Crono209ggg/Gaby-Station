@@ -4119,3 +4119,9 @@ Entries:
       message: Adiciona upgrades para a Terminus e Lança Telescópica pesquisáveis.
   id: 489
   time: '2026-09-22T11:55:38.0000000+00:00'
+- author: supernova
+  changes:
+    - type: Add
+      message: programa de chamar zelador via pda
+  id: 490
+  time: '2026-09-22T23:23:00.0000000+00:00'
