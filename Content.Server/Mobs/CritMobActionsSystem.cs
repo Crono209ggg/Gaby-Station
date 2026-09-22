@@ -23,6 +23,7 @@ using Robust.Shared.Player;
 using Content.Shared.Speech.Muting;
 using Content.Shared.Chat; // Einstein Engines - Languages
 using Content.Shared._ES.DeathCutscene;
+using Content.Shared._White.Xenomorphs.Infection;
 using Content.Shared.Damage;
 using Content.Shared.Damage.Prototypes;
 using Robust.Shared.Prototypes;
@@ -73,7 +74,7 @@ public sealed partial class CritMobActionsSystem : EntitySystem
 
     private void Succumb(EntityUid uid, ActorComponent actor)
     {
-        if (HasComp<DeathCutsceneComponent>(uid))
+        if (HasComp<DeathCutsceneComponent>(uid) && !HasComp<XenomorphPreventSuicideComponent>(uid))
         {
             if (TryComp<DamageableComponent>(uid, out var damageable))
                 _suicide.ApplyLethalDamage((uid, damageable), SuccumbDamageType);
