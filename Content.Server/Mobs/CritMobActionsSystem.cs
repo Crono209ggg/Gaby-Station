@@ -41,8 +41,8 @@ public sealed partial class CritMobActionsSystem : EntitySystem
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly PopupSystem _popupSystem = default!;
     [Dependency] private readonly QuickDialogSystem _quickDialog = default!;
-    [Dependency] private readonly MobThresholdSystem _mobThreshold = default!;
-    [Dependency] private readonly SharedSuicideSystem _suicide = default!;
+    [Dependency] private MobThresholdSystem _mobThreshold = default!;
+    [Dependency] private SharedSuicideSystem _suicide = default!;
 
     private static readonly ProtoId<DamageTypePrototype> SuccumbDamageType = "Asphyxiation";
 

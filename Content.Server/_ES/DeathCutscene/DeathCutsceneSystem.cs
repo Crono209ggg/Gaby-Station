@@ -13,14 +13,14 @@ using Robust.Shared.Timing;
 
 namespace Content.Server._ES.DeathCutscene;
 
-public sealed class DeathCutsceneSystem : EntitySystem
+public sealed partial class DeathCutsceneSystem : EntitySystem
 {
-    [Dependency] private readonly GhostSystem _ghost = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IPlayerManager _player = default!;
-    [Dependency] private readonly MetaDataSystem _metaData = default!;
-    [Dependency] private readonly SharedMindSystem _mind = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private GhostSystem _ghost = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IPlayerManager _player = default!;
+    [Dependency] private MetaDataSystem _metaData = default!;
+    [Dependency] private SharedMindSystem _mind = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
 
     public override void Initialize()
     {

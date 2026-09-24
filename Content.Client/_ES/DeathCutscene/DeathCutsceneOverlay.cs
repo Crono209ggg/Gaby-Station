@@ -11,12 +11,12 @@ using Robust.Shared.Timing;
 
 namespace Content.Client._ES.DeathCutscene;
 
-public sealed class DeathCutsceneOverlay : Overlay
+public sealed partial class DeathCutsceneOverlay : Overlay
 {
     private static readonly ProtoId<ShaderPrototype> ShaderProto = "ESDeathCutscene";
 
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
 
     public override OverlaySpace Space => OverlaySpace.WorldSpace | OverlaySpace.ScreenSpace;
     public override bool RequestScreenTexture => true;

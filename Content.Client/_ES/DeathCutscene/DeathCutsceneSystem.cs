@@ -11,12 +11,12 @@ using Robust.Shared.Timing;
 
 namespace Content.Client._ES.DeathCutscene;
 
-public sealed class DeathCutsceneSystem : EntitySystem
+public sealed partial class DeathCutsceneSystem : EntitySystem
 {
-    [Dependency] private readonly AudioSystem _audio = default!;
-    [Dependency] private readonly ContentAudioSystem _contentAudio = default!;
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IOverlayManager _overlay = default!;
+    [Dependency] private AudioSystem _audio = default!;
+    [Dependency] private ContentAudioSystem _contentAudio = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IOverlayManager _overlay = default!;
 
     private DeathCutsceneOverlay? _current;
 
