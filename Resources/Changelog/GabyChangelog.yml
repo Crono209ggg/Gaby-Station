@@ -4161,3 +4161,11 @@ Entries:
       message: Mais mudanças nos sprites das portas
   id: 494
   time: '2026-09-25T03:14:28.0000000+00:00'
+- author: Dreykor
+  changes:
+    - type: Fix
+      message: >-
+        O console de coordenadas no posto de escuta agora mostra o mapa da
+        estação corretamente.
+  id: 495
+  time: '2026-09-25T03:38:24.0000000+00:00'
