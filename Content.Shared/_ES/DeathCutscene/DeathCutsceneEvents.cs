@@ -12,9 +12,14 @@ public sealed class PlayDeathCutsceneEvent(DeathCutsceneTimings timings, SoundSp
     : EntityEventArgs
 {
     public readonly DeathCutsceneTimings Timings = timings;
+
     public readonly SoundSpecifier? Sound = sound;
+
     public readonly bool SuppressAmbientMusic = suppressAmbientMusic;
 }
 
 [Serializable, NetSerializable]
-public sealed class StopDeathCutsceneEvent : EntityEventArgs;
+public sealed class StopDeathCutsceneEvent(bool stopSound) : EntityEventArgs
+{
+    public readonly bool StopSound = stopSound;
+}

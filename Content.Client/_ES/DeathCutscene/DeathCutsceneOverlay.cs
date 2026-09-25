@@ -29,6 +29,8 @@ public sealed partial class DeathCutsceneOverlay : Overlay
 
     private TimeSpan Elapsed => _timing.RealTime - _startTime;
 
+    private TimeSpan FadeOutStart => _timings.GhostDelay + _timings.BlackoutHoldDuration;
+
     public DeathCutsceneOverlay(DeathCutsceneTimings timings, TimeSpan startTime)
     {
         IoCManager.InjectDependencies(this);
@@ -82,16 +84,18 @@ public sealed partial class DeathCutsceneOverlay : Overlay
 
     private float GetDesaturation()
     {
-        return Easings.OutSine(Progress(TimeSpan.Zero, _timings.DesaturationDuration));
+        var rampUp = Easings.OutSine(Progress(TimeSpan.Zero, _timings.DesaturationDuration));
+        var rampDown = Easings.OutSine(Progress(FadeOutStart, _timings.BlackoutFadeOutDuration));
+
+        return rampUp * (1f - rampDown);
     }
 
     private float GetBlackoutAlpha()
     {
-        var fadeOutStart = _timings.GhostDelay + _timings.BlackoutHoldDuration;
-        if (Elapsed < fadeOutStart)
+        if (Elapsed < FadeOutStart)
             return Easings.InSine(Progress(_timings.BlackoutDelay, _timings.BlackoutFadeInDuration));
 
-        return 1f - Easings.OutSine(Progress(fadeOutStart, _timings.BlackoutFadeOutDuration));
+        return 1f - Easings.OutSine(Progress(FadeOutStart, _timings.BlackoutFadeOutDuration));
     }
 
     private float Progress(TimeSpan start, TimeSpan duration)

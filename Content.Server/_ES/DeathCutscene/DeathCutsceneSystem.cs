@@ -2,12 +2,16 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.Collections.Generic;
 using Content.Server.Ghost;
+using Content.Shared._ES.CCVar;
 using Content.Shared._ES.DeathCutscene;
+using Content.Shared.Ghost;
 using Content.Shared.Body.Events;
 using Content.Shared.Mind;
 using Content.Shared.Mobs;
 using Robust.Server.Player;
+using Robust.Shared.Configuration;
 using Robust.Shared.Player;
 using Robust.Shared.Timing;
 
@@ -16,11 +20,14 @@ namespace Content.Server._ES.DeathCutscene;
 public sealed partial class DeathCutsceneSystem : EntitySystem
 {
     [Dependency] private GhostSystem _ghost = default!;
+    [Dependency] private INetConfigurationManager _netCfg = default!;
     [Dependency] private IGameTiming _timing = default!;
     [Dependency] private IPlayerManager _player = default!;
     [Dependency] private MetaDataSystem _metaData = default!;
     [Dependency] private SharedMindSystem _mind = default!;
     [Dependency] private SharedTransformSystem _transform = default!;
+
+    private readonly List<ICommonSession> _pendingStops = [];
 
     public override void Initialize()
     {
@@ -33,6 +40,8 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
 
     public override void Update(float frameTime)
     {
+        ResolvePendingStops();
+
         var query = EntityQueryEnumerator<ActiveDeathCutsceneComponent>();
         while (query.MoveNext(out var uid, out var active))
         {
@@ -76,7 +85,21 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
     private void OnPlayerDetached(Entity<ActiveDeathCutsceneComponent> ent, ref PlayerDetachedEvent args)
     {
         RemCompDeferred<ActiveDeathCutsceneComponent>(ent);
-        StopClientCutscene(args.Player);
+        _pendingStops.Add(args.Player);
+    }
+
+    private void ResolvePendingStops()
+    {
+        if (_pendingStops.Count == 0)
+            return;
+
+        foreach (var session in _pendingStops)
+        {
+            var skipped = HasComp<GhostComponent>(session.AttachedEntity);
+            StopClientCutscene(session, stopSound: !skipped);
+        }
+
+        _pendingStops.Clear();
     }
 
     private void StartCutscene(Entity<DeathCutsceneComponent> ent)
@@ -86,6 +109,18 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
 
         if (!TryComp<ActorComponent>(ent, out var actor) || !_mind.TryGetMind(ent.Owner, out _, out _))
             return;
+
+        var attempt = new DeathCutsceneAttemptEvent();
+        RaiseLocalEvent(ent.Owner, ref attempt);
+
+        if (attempt.Cancelled)
+            return;
+
+        if (!_netCfg.GetClientCVar(actor.PlayerSession.Channel, ESCCVars.DeathCutscene))
+        {
+            Ghost(ent.Owner, ent.Comp.CanReturnToBody, actor);
+            return;
+        }
 
         var timings = ent.Comp.GetTimings();
 
@@ -105,32 +140,38 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
         RemCompDeferred<ActiveDeathCutsceneComponent>(uid);
 
         if (TryComp<ActorComponent>(uid, out var actor))
-            StopClientCutscene(actor.PlayerSession);
+            StopClientCutscene(actor.PlayerSession, stopSound: true);
     }
 
-    private void StopClientCutscene(ICommonSession session)
+    private void StopClientCutscene(ICommonSession session, bool stopSound)
     {
         if (session.Channel is not { IsConnected: true })
             return;
 
-        RaiseNetworkEvent(new StopDeathCutsceneEvent(), session);
+        RaiseNetworkEvent(new StopDeathCutsceneEvent(stopSound), session);
     }
 
     private void GhostPlayer(Entity<ActiveDeathCutsceneComponent> ent)
     {
         var canReturn = ent.Comp.CanReturnToBody;
-        var isEye = HasComp<DeathCutsceneEyeComponent>(ent);
         TryComp<ActorComponent>(ent, out var actor);
 
         RemComp<ActiveDeathCutsceneComponent>(ent);
 
-        var ghosted = _mind.TryGetMind(ent.Owner, out var mindId, out var mind)
+        Ghost(ent.Owner, canReturn, actor);
+    }
+
+    private void Ghost(EntityUid uid, bool canReturn, ActorComponent? actor)
+    {
+        var isEye = HasComp<DeathCutsceneEyeComponent>(uid);
+
+        var ghosted = _mind.TryGetMind(uid, out var mindId, out var mind)
                       && _ghost.OnGhostAttempt(mindId, canReturn, mind: mind);
 
         if (!ghosted && actor != null)
-            StopClientCutscene(actor.PlayerSession);
+            StopClientCutscene(actor.PlayerSession, stopSound: true);
 
         if (isEye)
-            QueueDel(ent.Owner);
+            QueueDel(uid);
     }
 }
