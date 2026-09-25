@@ -4,8 +4,8 @@ meta:
   engineVersion: 286.0.0
   forkId: ""
   forkVersion: ""
-  time: 09/17/2026 16:34:30
-  entityCount: 1213
+  time: 09/22/2026 15:30:34
+  entityCount: 1214
 maps: []
 grids:
 - 1
@@ -781,7 +781,7 @@ entities:
       pos: -6.5,-6.5
     - type: Door
       state: Opening
-      secondsUntilStateChange: -21292.816
+      secondsUntilStateChange: -21929.73
     - type: DeviceLinkSource
       lastSignals:
         DoorStatus: True
@@ -844,7 +844,7 @@ entities:
       pos: -2.5,-6.5
     - type: Door
       state: Opening
-      secondsUntilStateChange: -21285.05
+      secondsUntilStateChange: -21921.965
     - type: DeviceLinkSource
       lastSignals:
         DoorStatus: True
@@ -6876,6 +6876,11 @@ entities:
       parent: 1
       rot: 3.141592653589793 rad
       pos: -1.5,-3.5
+  - uid: 73
+    components:
+    - type: Transform
+      parent: 1
+      pos: 6.5,-0.5
   - uid: 375
     components:
     - type: Transform
@@ -7879,7 +7884,12 @@ entities:
     - type: Transform
       parent: 1
       pos: 12.5,-2.5
+    - type: AccessReader
+      access:
+      - - NuclearOperative
+      - - SyndicateAgent
     - type: Emagged
+      emagType: -5
     - type: VendingMachine
       paidItems: False
 - proto: VendingMachinePride
