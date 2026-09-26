@@ -13,8 +13,7 @@ public sealed partial class ContentAudioSystem
     public bool AmbientMusicSuppressed { get; private set; }
 
     /// <summary>
-    /// Keep ambient music quiet until you call this again with false. Dont forget call it again or music never come back. 
-    /// and after 3 hours it worked lol
+    /// Keeps ambient music quiet until called again with false. Don't forget to call it again or the music will never come back. 
     /// </summary>
     public void SetAmbientMusicSuppressed(bool suppressed)
     {
