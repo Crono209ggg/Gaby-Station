@@ -73,9 +73,9 @@ public sealed partial class CritMobActionsSystem : EntitySystem
     }
 
     /// <summary>
-    /// Finish killing the mob who give up. This make the death cutscene play and turn him into ghost when it end.
-    /// If mob dont have cutscene or dont wanna die, it just become ghost like before.
-    /// its for the DeathCutscene :)
+    /// Finish killing the mob who gave up. This make the death cutscene play and turns the mob into a ghost when it ends.
+    /// If the mob doesn't have the cutscene component or doesn't wanna die, it just become a ghost like before.
+    /// It's for the DeathCutscene :)
     /// </summary>
     private void Succumb(EntityUid uid, ActorComponent actor)
     {
