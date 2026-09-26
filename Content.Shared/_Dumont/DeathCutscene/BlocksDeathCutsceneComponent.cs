@@ -7,9 +7,8 @@ using Robust.Shared.GameStates;
 namespace Content.Shared._Dumont.DeathCutscene;
 
 /// <summary>
-/// Put this on a implant and whoever have it dont see the death cutscene. Its for stuff that
-/// move the player somewhere else when he die, like bluespace lifeline, so the cutscene dont play just a sound with nothing showing.
-/// finaly it works ahhhhh
+/// Put this on an implant and whoever has it won't see the death cutscene. Its for stuff that
+/// moves the player somewhere else when he dies, like the bluespace lifeline. So, the cutscene won't play, there'll be just a sound with nothing showing.
 /// </summary>
 [RegisterComponent, NetworkedComponent]
 public sealed partial class BlocksDeathCutsceneComponent : Component;
