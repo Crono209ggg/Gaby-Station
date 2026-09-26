@@ -5,9 +5,7 @@
 namespace Content.Shared._ES.DeathCutscene;
 
 /// <summary>
-/// This event happen on a mob before his death cutscene start, Cancel this if your system grab the player when
-/// he die and you dont wanna him to see the cutscene, so it dont play for him.
-/// nice
+/// Raised on a mob before his death cutscene starts, Cancel this if your system wants to stop the death cutscene from playing
 /// </summary>
 [ByRefEvent]
 public record struct DeathCutsceneAttemptEvent(bool Cancelled = false);
