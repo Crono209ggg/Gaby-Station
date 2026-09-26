@@ -7,8 +7,8 @@ namespace Content.Client.Audio;
 public sealed partial class ContentAudioSystem
 {
     /// <summary>
-    /// If we r holding the ambient music or not. <see cref="DisableAmbientMusic"/> only fade the music
-    /// what is playing now, but next music come and play again, so this make all other music dont start playing.
+    /// If we are holding the ambient music or not. <see cref="DisableAmbientMusic"/> only fades the music
+    /// that is playing now. The next music comes and plays again, so this stops them from playing.
     /// </summary>
     public bool AmbientMusicSuppressed { get; private set; }
 
