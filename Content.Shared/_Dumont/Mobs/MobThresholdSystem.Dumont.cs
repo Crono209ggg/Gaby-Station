@@ -9,9 +9,8 @@ namespace Content.Shared.Mobs.Systems;
 public sealed partial class MobThresholdSystem
 {
     /// <summary>
-    /// Force mob into a state and keep his thresholds there, so bandage cant make him normal again (For some reason) Good when you need
-    /// some mob dead but his damage dont reach the death threshold by his own, Defib still can bring him back normal like before.
-    /// ok
+    /// Force a mob into a state and keeps his thresholds there, so a bandage can't make him normal again . Good when you need
+    /// some mob dead but his damage won't reach the death threshold by itself own, Defib still can bring him back normal like before.
     /// </summary>
     public void ForceThresholdState(EntityUid target, MobState state, MobThresholdsComponent? thresholds = null, MobStateComponent? mobState = null)
     {
