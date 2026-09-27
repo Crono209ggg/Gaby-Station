@@ -773,7 +773,21 @@ namespace Content.Server.Administration.Systems
 
             var senderSession = eventArgs.SenderSession;
 
-            // TODO: Sanitize text?
+            var sanitizedText = SanitizeBwoinkText(message.Text);
+            if (sanitizedText == null)
+                return;
+
+            if (!ReferenceEquals(sanitizedText, message.Text))
+            {
+                message = new BwoinkTextMessage(
+                    message.UserId,
+                    message.TrueSender,
+                    sanitizedText,
+                    message.SentAt,
+                    message.PlaySound,
+                    message.AdminOnly);
+            }
+
             // Confirm that this person is actually allowed to send a message here.
             var personalChannel = senderSession.UserId == message.UserId;
             var senderAdmin = _adminManager.GetAdminData(senderSession);
@@ -797,6 +811,70 @@ namespace Content.Server.Administration.Systems
                 true,
                 false);
             OnBwoinkInternal(bwoinkParams);
+        }
+
+        private static string? SanitizeBwoinkText(string? text)
+        {
+            const int maxBwoinkTextLength = 4096;
+
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
+            if (text.Length > maxBwoinkTextLength)
+                return null;
+
+            var needsRewrite = false;
+            for (var i = 0; i < text.Length; i++)
+            {
+                var c = text[i];
+
+                if (char.IsHighSurrogate(c))
+                {
+                    if (i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+                    {
+                        i++;
+                        continue;
+                    }
+
+                    needsRewrite = true;
+                }
+                else if (char.IsLowSurrogate(c))
+                {
+                    needsRewrite = true;
+                }
+            }
+
+            if (!needsRewrite)
+                return text;
+
+            var builder = new StringBuilder(text.Length);
+            for (var i = 0; i < text.Length; i++)
+            {
+                var c = text[i];
+
+                if (char.IsHighSurrogate(c))
+                {
+                    if (i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+                    {
+                        builder.Append(c);
+                        builder.Append(text[i + 1]);
+                        i++;
+                        continue;
+                    }
+
+                    builder.Append('�');
+                }
+                else if (char.IsLowSurrogate(c))
+                {
+                    builder.Append('�');
+                }
+                else
+                {
+                    builder.Append(c);
+                }
+            }
+
+            return builder.ToString();
         }
 
         /// <summary>
