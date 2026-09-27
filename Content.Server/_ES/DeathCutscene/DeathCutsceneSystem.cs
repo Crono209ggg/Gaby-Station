@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Collections.Generic;
+using System.Threading;
 using Content.Server.Ghost;
 using Content.Shared._ES.CCVar;
 using Content.Shared._ES.DeathCutscene;
@@ -14,6 +15,7 @@ using Robust.Server.Player;
 using Robust.Shared.Configuration;
 using Robust.Shared.Player;
 using Robust.Shared.Timing;
+using Timer = Robust.Shared.Timing.Timer;
 
 namespace Content.Server._ES.DeathCutscene;
 
@@ -36,20 +38,37 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
         SubscribeLocalEvent<DeathCutsceneComponent, MobStateChangedEvent>(OnMobStateChanged);
         SubscribeLocalEvent<ActiveDeathCutsceneComponent, BeingGibbedEvent>(OnBeingGibbed);
         SubscribeLocalEvent<ActiveDeathCutsceneComponent, PlayerDetachedEvent>(OnPlayerDetached);
+        SubscribeLocalEvent<ActiveDeathCutsceneComponent, ComponentShutdown>(OnShutdown);
     }
 
     public override void Update(float frameTime)
     {
         ResolvePendingStops();
+    }
 
-        var query = EntityQueryEnumerator<ActiveDeathCutsceneComponent>();
-        while (query.MoveNext(out var uid, out var active))
-        {
-            if (_timing.CurTime < active.GhostTime)
-                continue;
+    private void OnShutdown(Entity<ActiveDeathCutsceneComponent> ent, ref ComponentShutdown args)
+    {
+        ent.Comp.GhostTimer?.Cancel();
+        ent.Comp.GhostTimer = null;
+    }
 
-            GhostPlayer((uid, active));
-        }
+    private void ScheduleGhost(Entity<ActiveDeathCutsceneComponent> ent)
+    {
+        ent.Comp.GhostTimer?.Cancel();
+        ent.Comp.GhostTimer = new CancellationTokenSource();
+
+        var uid = ent.Owner;
+        var delay = ent.Comp.GhostTime - _timing.CurTime;
+
+        Timer.Spawn(delay < TimeSpan.Zero ? TimeSpan.Zero : delay,
+            () =>
+            {
+                if (TerminatingOrDeleted(uid) || !TryComp<ActiveDeathCutsceneComponent>(uid, out var active))
+                    return;
+
+                GhostPlayer((uid, active));
+            },
+            ent.Comp.GhostTimer.Token);
     }
 
     private void OnMobStateChanged(Entity<DeathCutsceneComponent> ent, ref MobStateChangedEvent args)
@@ -80,6 +99,8 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
         var eyeActive = EnsureComp<ActiveDeathCutsceneComponent>(eye);
         eyeActive.GhostTime = active.GhostTime;
         eyeActive.CanReturnToBody = active.CanReturnToBody;
+
+        ScheduleGhost((eye, eyeActive));
     }
 
     private void OnPlayerDetached(Entity<ActiveDeathCutsceneComponent> ent, ref PlayerDetachedEvent args)
@@ -127,6 +148,8 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
         var active = EnsureComp<ActiveDeathCutsceneComponent>(ent);
         active.GhostTime = _timing.CurTime + timings.GhostDelay;
         active.CanReturnToBody = ent.Comp.CanReturnToBody;
+
+        ScheduleGhost((ent.Owner, active));
 
         RaiseNetworkEvent(new PlayDeathCutsceneEvent(timings, ent.Comp.Sound, ent.Comp.SuppressAmbientMusic),
             actor.PlayerSession);
