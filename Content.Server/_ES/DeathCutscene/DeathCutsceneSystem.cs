@@ -8,6 +8,7 @@ using Content.Server.Ghost;
 using Content.Shared._ES.CCVar;
 using Content.Shared._ES.DeathCutscene;
 using Content.Shared.Ghost;
+using Content.Shared.Implants;
 using Content.Shared.Body.Events;
 using Content.Shared.Mind;
 using Content.Shared.Mobs;
@@ -35,7 +36,8 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
     {
         base.Initialize();
 
-        SubscribeLocalEvent<DeathCutsceneComponent, MobStateChangedEvent>(OnMobStateChanged);
+        SubscribeLocalEvent<DeathCutsceneComponent, MobStateChangedEvent>(OnMobStateChanged,
+            before: [typeof(SharedSubdermalImplantSystem)]);
         SubscribeLocalEvent<ActiveDeathCutsceneComponent, BeingGibbedEvent>(OnBeingGibbed);
         SubscribeLocalEvent<ActiveDeathCutsceneComponent, PlayerDetachedEvent>(OnPlayerDetached);
         SubscribeLocalEvent<ActiveDeathCutsceneComponent, ComponentShutdown>(OnShutdown);
@@ -125,7 +127,7 @@ public sealed partial class DeathCutsceneSystem : EntitySystem
 
     private void StartCutscene(Entity<DeathCutsceneComponent> ent)
     {
-        if (HasComp<ActiveDeathCutsceneComponent>(ent))
+        if (HasComp<ActiveDeathCutsceneComponent>(ent) || TerminatingOrDeleted(ent))
             return;
 
         if (!TryComp<ActorComponent>(ent, out var actor) || !_mind.TryGetMind(ent.Owner, out _, out _))
