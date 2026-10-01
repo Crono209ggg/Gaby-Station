@@ -4225,3 +4225,9 @@ Entries:
         150 horas no cargo.
   id: 503
   time: '2026-10-01T15:20:03.0000000+00:00'
+- author: Heartbeat
+  changes:
+    - type: Tweak
+      message: Consertou o bug de Central não spawnar em alguns rounds.
+  id: 504
+  time: '2026-10-01T21:17:31.0000000+00:00'
