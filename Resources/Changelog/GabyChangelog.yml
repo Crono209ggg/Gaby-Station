@@ -4243,3 +4243,9 @@ Entries:
       message: Who's Ready For Tomorrow a Jukebox
   id: 506
   time: '2026-10-03T05:54:08.0000000+00:00'
+- author: CRISO
+  changes:
+    - type: Add
+      message: Adicionado 12 vozes novas para customização de personagem.
+  id: 507
+  time: '2026-10-03T06:00:39.0000000+00:00'
