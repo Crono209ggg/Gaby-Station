@@ -4231,3 +4231,15 @@ Entries:
       message: Consertou o bug de Central não spawnar em alguns rounds.
   id: 504
   time: '2026-10-01T21:17:31.0000000+00:00'
+- author: ProjectAoff
+  changes:
+    - type: Add
+      message: Adicionado novo antagonista!
+    - type: Remove
+      message: Removido tesla.
+    - type: Tweak
+      message: Alterado mapa da evac.
+    - type: Fix
+      message: Corrigido bug do Bananilson.
+  id: 505
+  time: '2026-10-03T02:43:11.0000000+00:00'
