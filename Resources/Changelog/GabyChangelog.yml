@@ -4285,3 +4285,13 @@ Entries:
       message: Alerta vermelho agora é um meio termo entre gamma e âmbar.
   id: 512
   time: '2026-10-04T19:43:42.0000000+00:00'
+- author: Will-Oliver-Br
+  changes:
+    - type: Add
+      message: >-
+        Agora você pode agarrar em objetos ancorados caso seja pego pelo vento
+        espacial.
+    - type: Tweak
+      message: O vento espacial foi retrabalhado.
+  id: 513
+  time: '2026-10-04T19:51:24.0000000+00:00'
