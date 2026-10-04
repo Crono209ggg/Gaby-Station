@@ -4267,3 +4267,11 @@ Entries:
       message: Wraith foram desativados temporáriamente.
   id: 510
   time: '2026-10-04T19:00:03.0000000+00:00'
+- author: Struater
+  changes:
+    - type: Add
+      message: >-
+        Créditos de fim de rodada no estilo de filme, com elenco, antagonistas e
+        últimas palavras.
+  id: 511
+  time: '2026-10-04T19:15:34.0000000+00:00'
