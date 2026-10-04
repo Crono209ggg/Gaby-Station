@@ -4275,3 +4275,13 @@ Entries:
         últimas palavras.
   id: 511
   time: '2026-10-04T19:15:34.0000000+00:00'
+- author: Heartbeat
+  changes:
+    - type: Add
+      message: Lei espacial 2.0!
+    - type: Add
+      message: Alerta Âmbar. Substitui o alerta vermelho atual.
+    - type: Tweak
+      message: Alerta vermelho agora é um meio termo entre gamma e âmbar.
+  id: 512
+  time: '2026-10-04T19:43:42.0000000+00:00'
