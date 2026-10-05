@@ -4303,3 +4303,9 @@ Entries:
       message: As estações Origin e Eclipse foram atualizadas para os conteúdos atuais.
   id: 514
   time: '2026-10-04T20:44:17.0000000+00:00'
+- author: TheRealHeartbeat
+  changes:
+    - type: Fix
+      message: Livro da Lei Espacial agora mostra o resto da lei espacial.
+  id: 515
+  time: '2026-10-05T21:14:16.0000000+00:00'
