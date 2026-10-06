@@ -4315,3 +4315,9 @@ Entries:
       message: Space Light
   id: 516
   time: '2026-10-06T17:57:32.0000000+00:00'
+- author: CRISO
+  changes:
+    - type: Add
+      message: Adicionado 14 novos parallaxes para mapping.
+  id: 517
+  time: '2026-10-06T20:50:42.0000000+00:00'
