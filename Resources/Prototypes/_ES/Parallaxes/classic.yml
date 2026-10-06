@@ -1,63 +1,64 @@
-# SPDX-FileCopyrightText: 2022 20kdc <asdd2808@gmail.com>
-# SPDX-FileCopyrightText: 2022 Moony <moonheart08@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2022 Pieter-Jan Briers <pieterjan.briers+git@gmail.com>
-# SPDX-FileCopyrightText: 2022 T-Stalker <43253663+DogZeroX@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2022 metalgearsloth <metalgearsloth@gmail.com>
-# SPDX-FileCopyrightText: 2023 metalgearsloth <31366439+metalgearsloth@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2025 Aiden <28298836+Aidenkrz@users.noreply.github.com>
-#
-# SPDX-License-Identifier: MIT
-
 - type: parallax
-  id: Blank
-
-- type: parallax
-  id: Default
+  id: Classic
   layers:
     - texture:
         !type:ImageParallaxTextureSource
-        path: "/Textures/Parallaxes/layer1.png"
+        path: "/Textures/_ES/Parallaxes/layer1.png"
       slowness: 0.998046875
       scale: "1, 1"
     - texture:
-        !type:GeneratedParallaxTextureSource
-        id: "hq_wizard_stars"
-        configPath: "/Prototypes/Parallaxes/parallax_config_stars.toml"
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer2.png"
       slowness: 0.996625
-    - texture:
-        !type:GeneratedParallaxTextureSource
-        id: "hq_wizard_stars_dim"
-        configPath: "/Prototypes/Parallaxes/parallax_config_stars_dim.toml"
-      slowness: 0.989375
-    - texture:
-        !type:GeneratedParallaxTextureSource
-        id: "hq_wizard_stars_faster"
-        configPath: "/Prototypes/Parallaxes/parallax_config_stars-2.toml"
-      slowness: 0.987265625
-    - texture:
-        !type:GeneratedParallaxTextureSource
-        id: "hq_wizard_stars_dim_faster"
-        configPath: "/Prototypes/Parallaxes/parallax_config_stars_dim-2.toml"
-      slowness: 0.984352
-    ## Starlight
+      scale: "0.5, 0.5"
     - texture:
         !type:ImageParallaxTextureSource
-        path: "/Textures/_Starlight/Parallaxes/Abyss.png"
+        path: "/Textures/_ES/Parallaxes/layer3.png"
+      slowness: 0.989375
+      scale: "0.5, 0.5"
+    - texture:
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer4.png"
       slowness: 0.987265625
-      scale: "0.6, 0.6"
-      tiled: false
-      ## Starlight
+      scale: "0.5, 0.5"
+    - texture:
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer5.png"
+      slowness: 0.984352
+      scale: "0.5, 0.5"
+    - texture:
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer6.png"
+      slowness: 0.983120
+      scale: "0.5, 0.5"
   layersLQ:
     - texture:
-        !type:GeneratedParallaxTextureSource
-        id: ""
-        configPath: "/Prototypes/Parallaxes/parallax_config.toml"
-      slowness: 0.999446875
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer1.png"
+    - texture:
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer2.png"
+      slowness: 0.996625
+    - texture:
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer3.png"
+      slowness: 0.989375
+    - texture:
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer4.png"
+      slowness: 0.987265625
+    - texture:
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer5.png"
+      slowness: 0.984352
+    - texture:
+        !type:ImageParallaxTextureSource
+        path: "/Textures/_ES/Parallaxes/layer6.png"
+      slowness: 0.980298
   layersLQUseHQ: false
-
-# Because hyperspace and the menu need their own.
+  
 - type: parallax
-  id: FastSpace
+  id: ClassicFastSpace
   layers:
     - texture:
         !type:ImageParallaxTextureSource
@@ -110,4 +111,3 @@
         path: "/Textures/_ES/Parallaxes/layer6.png"
       slowness: 0.100
   layersLQUseHQ: false
-
