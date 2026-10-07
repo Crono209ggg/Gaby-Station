@@ -259,5 +259,7 @@
   - AdvancedAnomalyGeneratorCircuitboard
   technologyPrerequisites:
   - AdvancedAnomalyResearch
-  - XenoBiology
+  - Xenobiology
+  - XenoCompatibility
+  - ExperimentalScience
   position: -6,0
