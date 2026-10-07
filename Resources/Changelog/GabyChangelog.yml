@@ -4321,3 +4321,9 @@ Entries:
       message: Adicionado 14 novos parallaxes para mapping.
   id: 517
   time: '2026-10-06T20:50:42.0000000+00:00'
+- author: CRISO
+  changes:
+    - type: Remove
+      message: Falcon foi removido da rotação de mapas.
+  id: 518
+  time: '2026-10-07T22:15:28.0000000+00:00'
