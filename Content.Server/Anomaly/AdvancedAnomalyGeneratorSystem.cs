@@ -4,6 +4,7 @@
 
 using Content.Server.Anomaly.Components;
 using Content.Server.Atmos.EntitySystems;
+using Content.Server.Materials;
 using Content.Server.Pinpointer;
 using Content.Server.Power.EntitySystems;
 using Content.Server.Radio.EntitySystems;
@@ -12,6 +13,7 @@ using Content.Server.Station.Systems;
 using Content.Shared.Access.Systems;
 using Content.Shared.Anomaly;
 using Content.Shared.Anomaly.Prototypes;
+using Content.Shared.Construction;
 using Content.Shared.Materials;
 using Content.Shared.Physics;
 using Content.Shared.Popups;
@@ -58,6 +60,7 @@ public sealed partial class AdvancedAnomalyGeneratorSystem : EntitySystem
         SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, ResearchServerPointsChangedEvent>(OnRefresh);
         SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, ResearchRegistrationChangedEvent>(OnRefresh);
         SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, AdvancedAnomalyGeneratorGenerateMessage>(OnGenerate);
+        SubscribeLocalEvent<AdvancedAnomalyGeneratorComponent, MachineDeconstructedEvent>(OnDeconstructed, before: [typeof(MaterialStorageSystem)]);
         SubscribeLocalEvent<GeneratingAdvancedAnomalyGeneratorComponent, ComponentShutdown>((_, comp, _) => _audio.Stop(comp.AudioStream));
     }
 
@@ -141,6 +144,21 @@ public sealed partial class AdvancedAnomalyGeneratorSystem : EntitySystem
         return null;
     }
 
+    private void OnDeconstructed(EntityUid uid, AdvancedAnomalyGeneratorComponent comp, MachineDeconstructedEvent args)
+    {
+        if (TryComp<GeneratingAdvancedAnomalyGeneratorComponent>(uid, out var generating))
+            Refund((uid, comp), generating);
+    }
+
+    private void Refund(Entity<AdvancedAnomalyGeneratorComponent> ent, GeneratingAdvancedAnomalyGeneratorComponent generating)
+    {
+        var entry = _prototype.Index(generating.Entry);
+        _material.TryChangeMaterialAmount(ent, ent.Comp.RequiredMaterial, entry.MaterialCost);
+
+        if (TryComp<ResearchServerComponent>(generating.Server, out var server))
+            _research.ModifyServerPoints(generating.Server, entry.ResearchCost, server);
+    }
+
     private void FinishGeneration(Entity<AdvancedAnomalyGeneratorComponent> ent, GeneratingAdvancedAnomalyGeneratorComponent generating)
     {
         RemComp<GeneratingAdvancedAnomalyGeneratorComponent>(ent);
@@ -152,10 +170,7 @@ public sealed partial class AdvancedAnomalyGeneratorSystem : EntitySystem
         // Tile got yoinked mid-generation, so at least give the poor guy his points back
         if (GetTileError(ent, generating.Tile, out var coords) is { } error)
         {
-            _material.TryChangeMaterialAmount(ent, ent.Comp.RequiredMaterial, entry.MaterialCost);
-            if (TryComp<ResearchServerComponent>(generating.Server, out var server))
-                _research.ModifyServerPoints(generating.Server, entry.ResearchCost, server);
-
+            Refund(ent, generating);
             Report(ent, user, error);
             return;
         }
