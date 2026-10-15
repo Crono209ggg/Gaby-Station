@@ -4,13 +4,13 @@
 
 using System.Numerics;
 using Content.Client.Message;
-using Content.Shared.Anomaly.Prototypes;
+using Content.Shared._Dumont.Anomaly.Prototypes;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Input;
 using Robust.Shared.Prototypes;
 
-namespace Content.Client.Anomaly.Ui;
+namespace Content.Client._Dumont.Anomaly.Ui;
 
 public sealed class AdvancedAnomalyGeneratorCard : PanelContainer
 {

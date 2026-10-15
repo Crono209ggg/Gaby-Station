@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-using Content.Server.Anomaly.Components;
+using Content.Server._Dumont.Anomaly.Components;
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.Materials;
 using Content.Server.Pinpointer;
@@ -10,9 +10,10 @@ using Content.Server.Power.EntitySystems;
 using Content.Server.Radio.EntitySystems;
 using Content.Server.Research.Systems;
 using Content.Server.Station.Systems;
+using Content.Shared._Dumont.Anomaly;
+using Content.Shared._Dumont.Anomaly.Prototypes;
 using Content.Shared.Access.Systems;
 using Content.Shared.Anomaly;
-using Content.Shared.Anomaly.Prototypes;
 using Content.Shared.Construction;
 using Content.Shared.Materials;
 using Content.Shared.Physics;
@@ -29,7 +30,7 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
 
-namespace Content.Server.Anomaly;
+namespace Content.Server._Dumont.Anomaly;
 
 public sealed partial class AdvancedAnomalyGeneratorSystem : EntitySystem
 {
@@ -257,6 +258,7 @@ public sealed partial class AdvancedAnomalyGeneratorSystem : EntitySystem
             : Vector2i.Zero;
 
         var points = _research.TryGetClientServer(ent, out _, out var server) ? server.Points : 0;
+        var cooldown = ent.Comp.CooldownEnd - _timing.CurTime;
 
         _ui.SetUiState(ent.Owner, AdvancedAnomalyGeneratorUiKey.Key, new AdvancedAnomalyGeneratorUserInterfaceState(
             new(ent.Comp.AllowedAnomalies),
@@ -264,7 +266,7 @@ public sealed partial class AdvancedAnomalyGeneratorSystem : EntitySystem
             _material.GetMaterialAmount(ent, ent.Comp.RequiredMaterial),
             points,
             this.IsPowered(ent, EntityManager) && !HasComp<GeneratingAdvancedAnomalyGeneratorComponent>(ent),
-            ent.Comp.CooldownEnd,
+            cooldown > TimeSpan.Zero ? cooldown : TimeSpan.Zero,
             ent.Comp.Range,
             GetNetEntity(xform.GridUid),
             machineTile));

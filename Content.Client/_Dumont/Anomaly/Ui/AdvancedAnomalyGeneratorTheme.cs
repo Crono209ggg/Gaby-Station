@@ -4,7 +4,7 @@
 
 using Robust.Client.Graphics;
 
-namespace Content.Client.Anomaly.Ui;
+namespace Content.Client._Dumont.Anomaly.Ui;
 
 // All the UI colors live here, so changing them updates the window cards and map marker together
 // One color change here and the whole UI gets a new outfit

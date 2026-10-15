@@ -73,7 +73,7 @@
   - type: StationAiWhitelist
   - type: SpriteFade
   - type: Sprite
-    sprite: _Gabystation/Structures/Machines/Anomaly/advanced_anomaly_generator.rsi
+    sprite: _Dumont/Structures/Machines/Anomaly/advanced_anomaly_generator.rsi
     offset: 0,1
     drawdepth: Mobs
     layers:

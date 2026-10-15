@@ -10,7 +10,7 @@ using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Physics.Components;
 
-namespace Content.Client.Anomaly.Ui;
+namespace Content.Client._Dumont.Anomaly.Ui;
 
 public sealed class AdvancedAnomalyGeneratorNavMapControl : NavMapControl
 {

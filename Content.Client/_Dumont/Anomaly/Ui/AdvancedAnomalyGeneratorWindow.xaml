@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <controls:FancyWindow xmlns="https://spacestation14.io"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls"
-                      xmlns:ui="clr-namespace:Content.Client.Anomaly.Ui"
+                      xmlns:ui="clr-namespace:Content.Client._Dumont.Anomaly.Ui"
                       Title="{Loc 'advanced-anomaly-generator-ui-title'}"
                       MinSize="980 620"
                       Resizable="True">

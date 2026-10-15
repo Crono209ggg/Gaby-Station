@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-using Content.Shared.Anomaly.Prototypes;
+using Content.Shared._Dumont.Anomaly.Prototypes;
 using Content.Shared.Materials;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
 
-namespace Content.Shared.Anomaly;
+namespace Content.Shared._Dumont.Anomaly;
 
 [Serializable, NetSerializable]
 public enum AdvancedAnomalyGeneratorUiKey : byte
@@ -22,7 +22,7 @@ public sealed class AdvancedAnomalyGeneratorUserInterfaceState(
     int materialAmount,
     int researchPoints,
     bool canUse,
-    TimeSpan cooldownEnd,
+    TimeSpan cooldownRemaining,
     int range,
     NetEntity? grid,
     Vector2i machineTile) : BoundUserInterfaceState
@@ -32,7 +32,7 @@ public sealed class AdvancedAnomalyGeneratorUserInterfaceState(
     public readonly int MaterialAmount = materialAmount;
     public readonly int ResearchPoints = researchPoints;
     public readonly bool CanUse = canUse;
-    public readonly TimeSpan CooldownEnd = cooldownEnd;
+    public readonly TimeSpan CooldownRemaining = cooldownRemaining;
     public readonly int Range = range;
     public readonly NetEntity? Grid = grid;
     public readonly Vector2i MachineTile = machineTile;

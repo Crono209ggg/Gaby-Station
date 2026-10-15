@@ -4,7 +4,7 @@
 
 using Robust.Shared.Prototypes;
 
-namespace Content.Shared.Anomaly.Prototypes;
+namespace Content.Shared._Dumont.Anomaly.Prototypes;
 
 [Prototype]
 public sealed partial class AdvancedAnomalyGenerationPrototype : IPrototype
