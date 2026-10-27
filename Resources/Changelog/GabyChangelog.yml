@@ -4636,3 +4636,17 @@ Entries:
       message: Areas foram adicionadas aos mapas.
   id: 548
   time: '2026-10-27T01:19:01.0000000+00:00'
+- author: CRISO
+  changes:
+    - type: Add
+      message: Adicionado um intercom para a prisão.
+    - type: Add
+      message: Intercoms possuem uma cor representando seu departamento.
+    - type: Add
+      message: Caixa de charutos havaianos agora possuem um sprite único.
+    - type: Add
+      message: Cryosleepers agora possuem sprites direcionais.
+    - type: Tweak
+      message: Diversos sprites receberam um resprite, cheque a PR para ver mais sobre.
+  id: 549
+  time: '2026-10-27T01:24:51.0000000+00:00'
