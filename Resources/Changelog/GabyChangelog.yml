@@ -4650,3 +4650,11 @@ Entries:
       message: Diversos sprites receberam um resprite, cheque a PR para ver mais sobre.
   id: 549
   time: '2026-10-27T01:24:51.0000000+00:00'
+- author: TheRealHeartbeat
+  changes:
+    - type: Tweak
+      message: >-
+        Explosões não te disintegram mais, mas ainda são bem fortes e tem alta
+        chance de desmembrar.
+  id: 550
+  time: '2026-10-27T01:33:26.0000000+00:00'
